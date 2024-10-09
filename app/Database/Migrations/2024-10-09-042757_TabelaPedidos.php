@@ -60,8 +60,8 @@ class TabelaPedidos extends Migration
         ]);
 
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('id_empresa', 'empresas', 'id', 'cascade', 'cascade');
-        $this->forge->addForeignKey('id_cliente', 'clientes', 'id', 'cascade', 'cascade');
+        //$this->forge->addForeignKey('id_empresa', 'empresas', 'id', 'cascade', 'cascade');
+        //$this->forge->addForeignKey('id_cliente', 'clientes', 'id', 'cascade', 'cascade');
         $this->forge->createTable('pedidos');
     }
 

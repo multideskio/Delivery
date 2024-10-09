@@ -1,0 +1,95 @@
+version: "3.7"
+
+services:
+  redis_api:
+    image: redis:6.2
+    command: >
+      redis-server 
+      --appendonly yes
+      --port 6379
+      --bind 0.0.0.0
+      --logfile /data/redis-server.log
+      --dir /data
+      --tcp-keepalive 60
+      --timeout 300
+      --maxmemory 400mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_delivery:/data
+    networks:
+      - delivery
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    ports:
+      - "6382:6379"
+    restart: always
+
+  mysql_api:
+    image: mysql:8.0.34
+    networks:
+      - delivery
+    volumes: 
+      - mysql_data_delivery:/var/lib/mysql  # Ajuste no nome do volume
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+    environment:
+      MYSQL_ROOT_PASSWORD: "senhaSuperSecreta"
+      MYSQL_DATABASE: "delivery"
+      MYSQL_USER: "deliveryUser"
+      MYSQL_PASSWORD: "senhaSuperSecreta"
+
+  terapia_api:
+    depends_on:
+      - redis_api
+      - mysql_api
+    image: multideskio/ci4:php-8.2
+    networks:
+      - delivery
+    ports:
+      - "8082:80"
+    environment:
+      - CI4_GIT_REPO=https://github.com/multideskio/Delivery.git
+      - CI_ENVIRONMENT=development
+      - MIGRATIONS=true
+      - app_baseURL=https://deliveryapi.multidesk.io
+      - database_default_hostname=mysql_api
+      - database_default_database=delivery
+      - database_default_username=deliveryUser
+      - database_default_password=senhaSuperSecreta
+      - database_default_DBDriver=MySQLi
+      - database_default_DBPrefix=
+      - database_default_port=3306
+      - logger.threshold=9
+      - encryption.key=hex2bin:748eba4a19db487a49d261ca12b6b633b9c9c6e1b046d9b25e915c02a17ed963
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+networks:
+  delivery:
+    external: true
+
+volumes:
+  mysql_data_delivery:  # Ajustado para corresponder ao serviço MySQL
+    labels:
+      description: "Volume for MySQL data"
+  redis_delivery:
+    labels:
+      description: "Volume for Redis data"

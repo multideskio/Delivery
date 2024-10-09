@@ -42,8 +42,8 @@ class TabelaApiKeys extends Migration
         ]);
 
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('id_empresa', 'empresas', 'id', 'cascade', 'cascade');
-        $this->forge->addForeignKey('id_usuario', 'usuarios', 'id', 'no action', 'no action');
+        //$this->forge->addForeignKey('id_empresa', 'empresas', 'id', 'cascade', 'cascade');
+        //$this->forge->addForeignKey('id_usuario', 'usuarios', 'id', 'no action', 'no action');
         $this->forge->createTable('api_keys');
     }
 
