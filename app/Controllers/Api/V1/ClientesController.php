@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Api\V1;
 
+use App\Models\ClientesModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
@@ -15,6 +16,29 @@ class ClientesController extends BaseController
     public function index()
     {
         //
+    }
+
+    public function getCliente()
+    {
+        $input = $this->request->getJSON(true);
+
+        $cpf = preg_replace('/\D/', '', $input['cpf']);
+
+        $modelCliente = new ClientesModel();
+
+        $build = $modelCliente->select('cpf, nome, telefone, endereco')->where('cpf', $cpf)->first();
+
+        if ($build) {
+            $data = [
+                "output" => "**Nome:** {$build['nome']}\n**CPF:** {$build['cpf']}\n**Telefone:** {$build['telefone']}\n**Endereco:** {$build['endereco']}"
+            ];
+        } else {
+            $data = [
+                "output" => "CPF Não foi localizado"
+            ];
+        }
+
+        return $this->respond($data);
     }
 
     /**
