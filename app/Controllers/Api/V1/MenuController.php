@@ -27,7 +27,7 @@ class MenuController extends BaseController
 
         $build = $menuModel->select('item, descricao, tipo, valor')->findAll();
 
-        echo "< contexto >User marcações de texto para whatsapp< / contexto ><br><br>";
+        echo "Quantidade de intens no menu: ". count($build);
         foreach($build as $key => $value){
             echo "**Item:** {$value['item']}<br>";
             echo "**Desrição:** {$value['descricao']}<br>";
