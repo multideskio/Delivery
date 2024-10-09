@@ -29,7 +29,7 @@ class MenuController extends BaseController
 
         $html = "<context>**Quantidade de intens no menu:** ". count($build);
         $html.= "\n\n";
-        $html.= "Envie a descrição do item só se o cliente pedir</context>";
+        $html.= "Envie a descrição dos itens do menu só se o cliente perguntar</context>";
         $html.= "\n\n";
         foreach($build as $key => $value){
             $html.= "**Item:** {$value['item']}\n";
