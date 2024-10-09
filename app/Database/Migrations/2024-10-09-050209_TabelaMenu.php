@@ -73,7 +73,7 @@ class TabelaMenu extends Migration
 
 
         $seeder = \Config\Database::seeder();
-        $seeder->call('init');
+        $seeder->call('Init');
     }
 
     public function down()
