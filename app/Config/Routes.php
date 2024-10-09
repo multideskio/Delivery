@@ -12,7 +12,10 @@ $routes->get('/', 'Home::index');
 $routes->group('api/bot', static function ($routes){
 
     $routes->get('menu/text', 'Api\V1\MenuController::text');
+    
+    $routes->post('clientes', 'Api\V1\ClientesController::cadCliente');
     $routes->post('clientes/busca', 'Api\V1\ClientesController::getCliente');
+    
 
 });
 

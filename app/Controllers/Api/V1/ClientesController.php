@@ -18,10 +18,53 @@ class ClientesController extends BaseController
         //
     }
 
-    public function getCliente()
+    public function cadCliente()
     {
         $input = $this->request->getJSON(true);
 
+        $cpf      = preg_replace('/\D/', '', $input['cpf']);
+        $nome     = $input['nome'];
+        $telefone = $input['telefone'];
+        $endereco = $input['endereco'];
+
+        $modelCliente = new ClientesModel();
+        $build = $modelCliente->where('cpf', $cpf)->first();
+
+        if($build){
+            $dataUpdate = [
+                "id" => $build['id'],
+                "nome" => $input['nome'],
+                "telefone" => $input['telefone'],
+                "endereco" =>  $input['endereco'],
+            ];
+
+            $modelCliente->save($dataUpdate);
+            
+            $data = [
+                "output" => "O cliente foi atualizado com sucesso, sempre garanta que o endereço está completo para não haver problemas na entrega..."
+            ];
+        }else{
+
+            $dataUpdate = [
+                "nome" => $input['nome'],
+                "telefone" => $input['telefone'],
+                "endereco" =>  $input['endereco'],
+                "cpf" => $cpf 
+            ];
+
+            $modelCliente->save($dataUpdate);
+            
+            $data = [
+                "output" => "O cliente foi cadastrado com sucesso, sempre garanta que o endereço está completo para não haver problemas na entrega..."
+            ];
+        }
+
+        return $this->respond($data);
+
+    }
+    public function getCliente()
+    {
+        $input = $this->request->getJSON(true);
         $cpf = preg_replace('/\D/', '', $input['cpf']);
 
         $modelCliente = new ClientesModel();
