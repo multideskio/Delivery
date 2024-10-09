@@ -27,7 +27,9 @@ class MenuController extends BaseController
 
         $build = $menuModel->select('item, descricao, tipo, valor')->findAll();
 
-        $html = "**Quantidade de intens no menu:** ". count($build);
+        $html = "<context>**Quantidade de intens no menu:** ". count($build);
+        $html.= "\n\n";
+        $html.= "Envie a descrição do item só se o cliente pedir</context>";
         $html.= "\n\n";
         foreach($build as $key => $value){
             $html.= "**Item:** {$value['item']}\n";
