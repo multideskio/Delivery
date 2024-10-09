@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use Ramsey\Uuid\Uuid;
 
 class ClientesModel extends Model
 {
@@ -36,11 +37,17 @@ class ClientesModel extends Model
     // Callbacks
     protected $allowCallbacks = true;
     protected $beforeInsert   = [];
-    protected $afterInsert    = [];
+    protected $afterInsert    = ["hashPassword"];
     protected $beforeUpdate   = [];
     protected $afterUpdate    = [];
     protected $beforeFind     = [];
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    protected function hashPassword(array $data)
+    {
+        $data['data']['slug'] = Uuid::uuid4()->toString();
+        return $data;
+    }
 }

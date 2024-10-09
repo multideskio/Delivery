@@ -45,18 +45,12 @@ class UsuariosModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-
-
     protected function hashPassword(array $data)
     {
-        $uuid = Uuid::uuid4();
-        
         if (isset($data['data']['password'])) {
             $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
         }
-        
-        $data['data']['slug'] = $uuid->toString();
-
+        $data['data']['slug'] = Uuid::uuid4()->toString();
         return $data;
     }
 }

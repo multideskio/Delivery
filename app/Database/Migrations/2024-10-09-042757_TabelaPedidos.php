@@ -23,12 +23,16 @@ class TabelaPedidos extends Migration
                 'type' => 'int',
                 'unsigned' => true
             ],
+            'numero_pedido' => [
+                'type' => 'varchar',
+                'constraint' => '10'
+            ],
             'itens' => [
                 'type' => 'text'
             ],
             'total' => [
                 'type' => 'decimal',
-                'constraint' => '10.2'
+                'constraint' => '10,2'
             ],
             'forma_pagamento' => [
                 'type' => 'varchar',
@@ -37,9 +41,10 @@ class TabelaPedidos extends Migration
             'observacoes' => [
                 'type' => 'text'
             ],
-            'ativo' => [
-                'type' => 'bool',
-                'default' => true
+            'status' => [
+                'type'       => 'ENUM',
+                'constraint' => ['em preparação', 'saiu para entrega', 'pedido entregue'],
+                'default'    => 'em preparação',
             ],
             'slug' => [
                 'type' => 'varchar',
