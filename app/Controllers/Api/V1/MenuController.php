@@ -27,16 +27,17 @@ class MenuController extends BaseController
 
         $build = $menuModel->select('item, descricao, tipo, valor')->findAll();
 
-        echo "Quantidade de intens no menu: ". count($build);
+        $html = "**Quantidade de intens no menu:** ". count($build);
+        $html.= "\n\n";
         foreach($build as $key => $value){
-            echo "**Item:** {$value['item']}<br>";
-            echo "**Desrição:** {$value['descricao']}<br>";
-            echo "**Categoria:** {$value['tipo']}<br>";
-            echo "**Valor:** R$ {$value['valor']}<br>";
-            echo "<br>";
+            $html.= "**Item:** {$value['item']}\n";
+            $html.= "**Desrição:** {$value['descricao']}\n";
+            $html.= "**Categoria:** {$value['tipo']}\n";
+            $html.= "**Valor:** R$ {$value['valor']}\n";
+            $html.= "\n";
         }
 
-        //return $this->respond($build);
+        return $this->respond($html);
     }
 
     /**
