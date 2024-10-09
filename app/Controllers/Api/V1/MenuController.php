@@ -27,7 +27,16 @@ class MenuController extends BaseController
 
         $build = $menuModel->select('item, descricao, tipo, valor')->findAll();
 
-        return $this->respond($build);
+        echo "< contexto >User marcações de texto para whatsapp< / contexto ><br><br>";
+        foreach($build as $key => $value){
+            echo "**Item:** {$value['item']}<br>";
+            echo "**Desrição:** {$value['descricao']}<br>";
+            echo "**Categoria:** {$value['tipo']}<br>";
+            echo "**Valor:** R$ {$value['valor']}<br>";
+            echo "<br>";
+        }
+
+        //return $this->respond($build);
     }
 
     /**

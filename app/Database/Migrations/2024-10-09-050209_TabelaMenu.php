@@ -37,7 +37,7 @@ class TabelaMenu extends Migration
             ],
             'valor' => [
                 'type' => 'decimal',
-                'constraint' => '10.2'
+                'constraint' => "10,2"
             ],
             'image' => [
                 'type' => 'varchar',
