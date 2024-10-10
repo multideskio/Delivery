@@ -17,6 +17,9 @@ class PedidosController extends BaseController
     public function index()
     {
         //
+        
+        $modelPedidos = new PedidosModel();
+        return $this->respond($modelPedidos->findAll());
     }
 
     /**
@@ -143,7 +146,7 @@ class PedidosController extends BaseController
                 // Caso não exista um pedido "em preparação", cria um novo pedido
                 $modelPedido->insert($pedidoData);
 
-                return $this->respond(['output' => 'Pedido criado com sucesso!', 'pedido' => $pedidoData], 200);
+                return $this->respond(['output' => "Pedido criado com sucesso!\n\n**O número do pedido é: {$pedidoData}**", 'pedido' => $pedidoData], 200);
             }
         } catch (\Exception $e) {
             // Captura qualquer exceção e retorna a mensagem de erro com código 200
@@ -151,8 +154,54 @@ class PedidosController extends BaseController
         }
     }
 
+    public function status(){
+        try {
+            
+            // Recebe os dados da requisição em formato JSON
+            $input = $this->request->getJSON(true);
+
+            // Valida o campo CPF (obrigatório)
+            if (empty($input['cpf'])) {
+                throw new \Exception('Informe o CPF para localizar o cliente.');
+            }
+
+            // Remove caracteres não numéricos do CPF
+            $cpf = preg_replace('/\D/', '', $input['cpf']);
+
+            // Valida o campo itens (obrigatório)
+            if (empty($input['numero_pedido'])) {
+                throw new \Exception('O numero do pedido é obrigatório.');
+            }
+
+            // Instancia o modelo do cliente
+            $modelCliente = new ClientesModel();
+            $cliente = $modelCliente->select('id as id_cliente')->where('cpf', $cpf)->first();
+
+            // Verifica se o cliente foi encontrado
+            if (!$cliente) {
+                throw new \Exception('CPF não informado ou cliente não tem cadastro.');
+            }
+
+            // Instancia o modelo de pedidos
+            $modelPedido = new PedidosModel();
+
+            // Verifica se o cliente já tem um pedido "em preparação"
+            $pedidoExistente = $modelPedido->where([
+                'id_cliente' => $cliente['id_cliente'],
+                'numero_pedido' => $input['numero_pedido']
+            ])->first();
 
 
+            if (!$pedidoExistente) {
+                throw new \Exception('O pedido não foi encontrado.');
+            }
+
+            return $this->respond(['output' => "*O status do pedido é:* {$pedidoExistente['status']}"]);
+
+        }catch(\Exception $e){
+            return $this->respond(['output' => $e->getMessage()], 200);
+        }
+    }
 
 
     /**

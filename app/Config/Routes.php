@@ -17,6 +17,7 @@ $routes->group('api/bot', static function ($routes){
     $routes->post('clientes/busca', 'Api\V1\ClientesController::getCliente');
 
     $routes->post('pedido', 'Api\V1\PedidosController::create');
+    $routes->post('pedido/status', 'Api\V1\PedidosController::status');
     
 
 });
