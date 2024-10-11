@@ -55,7 +55,7 @@
 
     <!-- WebSocket Script -->
     <script>
-        const ws = new WebSocket('ws://localhost:8081?empresa_id=1'); // Substitua pelo ID correto da empresa
+        const ws = new WebSocket('ws://5.161.224.69:8081?empresa_id=1'); // Substitua pelo ID correto da empresa
 
         ws.onopen = () => {
             console.log('Conectado ao WebSocket');
