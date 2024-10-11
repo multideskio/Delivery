@@ -55,69 +55,87 @@
 
     <!-- WebSocket Script -->
     <script>
-        const ws = new WebSocket('wss://delivery.multidesk.io/ws?empresa_id=1'); // Substitua pelo ID correto da empresa
+        let ws;
+        let reconnectInterval = 5000; // Tempo de espera para reconectar em ms
+        let reconnectAttempts = 0;    // Número de tentativas de reconexão
+        const maxReconnectAttempts = 10; // Número máximo de tentativas de reconexão
 
-        ws.onopen = () => {
-            console.log('Conectado ao WebSocket');
-        };
+        function connectWebSocket() {
+            // Tentar conectar ao WebSocket
+            ws = new WebSocket('wss://delivery.multidesk.io/ws?empresa_id=1'); // Substitua pelo ID correto da empresa
 
-        ws.onmessage = (event) => {
-            try {
-                // Fazer log do dado recebido para ver sua estrutura
-                console.log("Mensagem recebida:", event.data);
+            ws.onopen = () => {
+                console.log('Conectado ao WebSocket');
+                reconnectAttempts = 0;  // Reinicia a contagem de tentativas ao conectar
+            };
 
-                const rawData = JSON.parse(event.data); // Parse do primeiro nível
-                console.log("Dados após o primeiro parse:", rawData);
+            ws.onmessage = (event) => {
+                try {
+                    // Fazer log do dado recebido para ver sua estrutura
+                    console.log("Mensagem recebida:", event.data);
 
-                // Verificar se existe a propriedade 'message' e fazer parse da string JSON interna
-                if (!rawData.message) {
-                    console.error('Estrutura inesperada, `rawData.message` está indefinido:', rawData);
-                    return;
+                    const rawData = JSON.parse(event.data); // Parse do primeiro nível
+                    console.log("Dados após o primeiro parse:", rawData);
+
+                    // Verificar se existe a propriedade 'message' e fazer parse da string JSON interna
+                    if (!rawData.message) {
+                        console.error('Estrutura inesperada, `rawData.message` está indefinido:', rawData);
+                        return;
+                    }
+
+                    const data = JSON.parse(rawData.message); // Parse da string JSON dentro de 'message'
+                    console.log("Dados após o segundo parse:", data);
+
+                    const clientData = data.data;  // Acessar os dados corretamente
+
+                    let notificationClass = '';
+                    let title = '';
+
+                    if (data.event === 'new_cliente') {
+                        notificationClass = 'new';
+                        title = '<strong><i class="fas fa-user-plus"></i> Novo cliente cadastrado:</strong>';
+                    } else if (data.event === 'update_cliente') {
+                        notificationClass = 'update';
+                        title = '<strong><i class="fas fa-user-edit"></i> Cliente atualizado:</strong>';
+                    }
+
+                    // Criar o HTML da notificação
+                    const notificationHtml = `
+                        <div class="notification ${notificationClass} fade-in-left">
+                            ${title} ${clientData.nome}<br>
+                            <small>CPF: ${clientData.cpf} | Telefone: ${clientData.telefone}</small>
+                        </div>
+                    `;
+
+                    // Adicionar a notificação ao início da lista
+                    $('#notification-list').prepend(notificationHtml);
+
+                    // Aplicar a classe 'show' para a animação de entrada
+                    setTimeout(() => {
+                        $('.fade-in-left').first().addClass('show');
+                    }, 100);
+                } catch (error) {
+                    console.error('Erro ao processar a mensagem:', error);
                 }
+            };
 
-                const data = JSON.parse(rawData.message); // Parse da string JSON dentro de 'message'
-                console.log("Dados após o segundo parse:", data);
-
-                const clientData = data.data;  // Acessar os dados corretamente
-
-                let notificationClass = '';
-                let title = '';
-
-                if (data.event === 'new_cliente') {
-                    notificationClass = 'new';
-                    title = '<strong><i class="fas fa-user-plus"></i> Novo cliente cadastrado:</strong>';
-                } else if (data.event === 'update_cliente') {
-                    notificationClass = 'update';
-                    title = '<strong><i class="fas fa-user-edit"></i> Cliente atualizado:</strong>';
+            ws.onclose = () => {
+                console.log('Conexão WebSocket fechada. Tentando reconectar...');
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    setTimeout(connectWebSocket, reconnectInterval);  // Tentar reconectar após um intervalo
+                } else {
+                    console.error('Número máximo de tentativas de reconexão atingido');
                 }
+            };
 
-                // Criar o HTML da notificação
-                const notificationHtml = `
-                    <div class="notification ${notificationClass} fade-in-left">
-                        ${title} ${clientData.nome}<br>
-                        <small>CPF: ${clientData.cpf} | Telefone: ${clientData.telefone}</small>
-                    </div>
-                `;
+            ws.onerror = (error) => {
+                console.error('Erro no WebSocket: ', error);
+            };
+        }
 
-                // Adicionar a notificação ao início da lista
-                $('#notification-list').prepend(notificationHtml);
-
-                // Aplicar a classe 'show' para a animação de entrada
-                setTimeout(() => {
-                    $('.fade-in-left').first().addClass('show');
-                }, 100);
-            } catch (error) {
-                console.error('Erro ao processar a mensagem:', error);
-            }
-        };
-
-        ws.onclose = () => {
-            console.log('Conexão WebSocket fechada');
-        };
-
-        ws.onerror = (error) => {
-            console.error('Erro no WebSocket: ', error);
-        };
+        // Conectar ao WebSocket
+        connectWebSocket();
     </script>
 
     <!-- Bootstrap 5 JavaScript CDN -->
