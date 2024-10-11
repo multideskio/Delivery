@@ -1,6 +1,18 @@
 version: "3.7"
 
 services:
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      - PMA_HOST=mysql_api
+    networks:
+      - delivery
+    deploy:
+      mode: replicated
+      replicas: 1
+    ports:
+      - "8091:80"
+
   redis_api:
     image: redis:6.2
     command: >
@@ -48,7 +60,7 @@ services:
       MYSQL_USER: "deliveryUser"
       MYSQL_PASSWORD: "senhaSuperSecreta"
 
-  terapia_api:
+  delivery:
     depends_on:
       - redis_api
       - mysql_api
@@ -57,6 +69,7 @@ services:
       - delivery
     ports:
       - "8082:80"
+      - "8081:8081"  # Porta do WebSocket mapeada
     environment:
       - CI4_GIT_REPO=https://github.com/multideskio/Delivery.git
       - CI_ENVIRONMENT=development
@@ -71,6 +84,8 @@ services:
       - database_default_port=3306
       - logger.threshold=9
       - encryption.key=hex2bin:748eba4a19db487a49d261ca12b6b633b9c9c6e1b046d9b25e915c02a17ed963
+    command: >
+      bash -c "php spark migrate && php spark serve --port=80 && php spark ws:start"  # Executar o WebSocket automaticamente
     deploy:
       resources:
         limits:
@@ -87,7 +102,7 @@ networks:
     external: true
 
 volumes:
-  mysql_data_delivery:  # Ajustado para corresponder ao serviço MySQL
+  mysql_data_delivery:
     labels:
       description: "Volume for MySQL data"
   redis_delivery:

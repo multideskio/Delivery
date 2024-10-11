@@ -2,9 +2,11 @@
 
 namespace App\Controllers\Api\V1;
 
+use App\Libraries\RedisLibrary;
 use App\Models\ClientesModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
+use App\Libraries\WebSocketLibrary; // Importando a library WebSocket
 
 class ClientesController extends BaseController
 {
@@ -13,6 +15,16 @@ class ClientesController extends BaseController
      *
      * @return ResponseInterface
      */
+    protected $redis;
+    protected $webSocket;
+
+    public function __construct()
+    {
+        // Inicializar a biblioteca Redis
+        $this->redis = new RedisLibrary();
+        // Inicializar a biblioteca WebSocket
+        $this->webSocket = new WebSocketLibrary();
+    }
     public function index()
     {
         //
@@ -27,41 +39,75 @@ class ClientesController extends BaseController
         $telefone = $input['telefone'];
         $endereco = $input['endereco'];
 
-        $modelCliente = new ClientesModel();
+        $modelCliente = new \App\Models\ClientesModel();
         $build = $modelCliente->where('cpf', $cpf)->first();
 
-        if($build){
+        if ($build) {
+            // Atualizando os dados do cliente existente
             $dataUpdate = [
                 "id" => $build['id'],
-                "nome" => $input['nome'],
-                "telefone" => $input['telefone'],
-                "endereco" =>  $input['endereco'],
+                "nome" => $nome,
+                "telefone" => $telefone,
+                "endereco" => $endereco,
+                "cpf" => $cpf
             ];
 
             $modelCliente->save($dataUpdate);
-            
-            $data = [
-                "output" => "O cliente foi atualizado com sucesso, sempre garanta que o endereço está completo para não haver problemas na entrega..."
-            ];
-        }else{
 
-            $dataUpdate = [
-                "nome" => $input['nome'],
-                "telefone" => $input['telefone'],
-                "endereco" =>  $input['endereco'],
-                "cpf" => $cpf 
+            // Enviar notificação via WebSocket para clientes conectados
+            $this->webSocket->sendMessage([
+                'event' => 'update_cliente',
+                'data'  => $dataUpdate
+            ]);
+
+            // Publicar notificação no Redis
+            $this->redis->publish('cliente_event', json_encode([
+                'event' => 'update_cliente',
+                'data'  => $dataUpdate
+            ]));
+
+            $data = ["output" => "O cliente foi atualizado com sucesso."];
+        } else {
+            // Inserindo um novo cliente
+            $dataInsert = [
+                "nome" => $nome,
+                "telefone" => $telefone,
+                "endereco" => $endereco,
+                "cpf" => $cpf
             ];
 
-            $modelCliente->save($dataUpdate);
-            
-            $data = [
-                "output" => "O cliente foi cadastrado com sucesso, sempre garanta que o endereço está completo para não haver problemas na entrega..."
-            ];
+            $modelCliente->save($dataInsert);
+
+            // Enviar notificação via WebSocket para clientes conectados
+            $this->webSocket->sendMessage([
+                'event' => 'new_cliente',
+                'data'  => $dataInsert
+            ]);
+
+            // Publicar notificação no Redis
+            $this->redis->publish('cliente_event', json_encode([
+                'event' => 'new_cliente',
+                'data'  => $dataInsert
+            ]));
+
+            $data = ["output" => "O cliente foi cadastrado com sucesso."];
         }
 
         return $this->respond($data);
-
     }
+
+    // Função para enviar notificações ao WebSocket
+    private function sendWebSocketNotification($event, $data)
+    {
+        // Usar a library WebSocket para enviar notificação
+        $websocket = new WebSocketLibrary();
+        $websocket->sendMessage([
+            'event' => $event,
+            'data' => $data
+        ]);
+    }
+
+
     public function getCliente()
     {
         $input = $this->request->getJSON(true);

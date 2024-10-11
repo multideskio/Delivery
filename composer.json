@@ -11,8 +11,11 @@
     },
     "require": {
         "php": "^8.1",
+        "cboden/ratchet": "^0.4.4",
         "codeigniter4/framework": "^4.0",
-        "ramsey/uuid": "^4.7"
+        "predis/predis": "^2.2",
+        "ramsey/uuid": "^4.7",
+        "textalk/websocket": "^1.5"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
