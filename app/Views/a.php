@@ -86,6 +86,12 @@
                     const data = JSON.parse(rawData.message); // Parse da string JSON dentro de 'message'
                     console.log("Dados após o segundo parse:", data);
 
+                    // Verificar se 'data' contém a propriedade 'data' e se a estrutura é válida
+                    if (!data.data || !data.data.nome) {
+                        console.error('Dados inesperados, `data.data` ou `data.data.nome` está indefinido:', data);
+                        return;
+                    }
+
                     const clientData = data.data;  // Acessar os dados corretamente
 
                     let notificationClass = '';
